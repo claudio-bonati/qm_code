@@ -8,19 +8,22 @@ All the scripts have a __main__ for unit testing or explanations that can be
 used as an example of use.
 
 
-fd_3p_d.py  finite differences with 3 points discretization of the second
-            derivative and Dirichlet boundary conditions.
+fd_3p_d.py     finite differences with 3 points discretization of the second
+               derivative and Dirichlet boundary conditions.
 
-fd_3p_p.py  finite differences with 3 points discretization of the second
-            derivative and periodic boundary conditions.
+fd_3p_p.py     finite differences with 3 points discretization of the second
+               derivative and periodic boundary conditions.
 
-fd_5p_d.py  finite differences with 5 points discretization of the second
-            derivative and Dirichlet boundary conditions.
+fd_5p_d.py     finite differences with 5 points discretization of the second
+               derivative and Dirichlet boundary conditions.
 
-fd_5p_d.py  finite differences with 5 points discretization of the second
-            derivative and periodic boundary conditions.
+fd_5p_d.py     finite differences with 5 points discretization of the second
+               derivative and periodic boundary conditions.
 
-fft_p.py    Fourier method with periodic boundary conditions.
+fft_p.py       Fourier method with periodic boundary conditions.
+
+shooting_d.py  An elementary implementation of the shooting method for 
+               Dirichlet boundary conditions
 
 *********************************
 

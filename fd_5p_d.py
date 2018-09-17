@@ -141,27 +141,74 @@ if __name__=="__main__":
   print('')
   print('')
 
-  # Laguerre equation
-  def pot_l(x):
-    return x*x+3.0/(4.0*x*x)
+  ## Paine potential
+  def pot_p(x):
+    return 1/(x+0.1)/(x+0.1)
 
-  xmin=1.0e-15
-  xmax=40
+  def exact_p(x):
+    if x==0:
+      return 1.5198658211
+    if x==1:
+      return 4.9433098221
+    if x==2:
+      return 10.284662645
+    if x==3:
+      return 17.559957746
+    if x==4:
+      return 26.782863158
+    if x==5:
+      return 37.964425862
+    if x==6:
+      return 51.113357757
+    if x==7:
+      return 66.236447704
+    if x==8:
+      return 83.338962374
+    if x==9:
+      return 102.42498840
+    if x==10:
+      return 123.49770680
+    if x==11:
+      return 146.55960608
+    if x==12:
+      return 171.61264485
+    if x==13: 
+      return 198.65837500
+    if x==14:
+      return 227.69803474
+    if x==15:
+      return 258.73261893
+    if x==16:
+      return 291.76293246
+    if x==17:
+      return 326.78963096
+    if x==18:
+      return 363.81325194
+    if x==19:
+      return 402.83423888
+    if x==20:
+      return 443.85295984
+    else:
+      print("ERROR: the required value is not tabulated")
+      sys.exit(1)
+
+  xmin=0
+  xmax=np.pi
 
   N=50
 
-  risA=fd_5p_d_solver(pot_l, xmin, xmax, N)
-  risB=fd_5p_d_solver(pot_l, xmin, xmax, 2*N)
-  risC=fd_5p_d_solver(pot_l, xmin, xmax, 3*N)
-  risD=fd_5p_d_solver(pot_l, xmin, xmax, 4*N)
+  risA=fd_5p_d_solver(pot_p, xmin, xmax, N)
+  risB=fd_5p_d_solver(pot_p, xmin, xmax, 2*N)
+  risC=fd_5p_d_solver(pot_p, xmin, xmax, 3*N)
+  risD=fd_5p_d_solver(pot_p, xmin, xmax, 4*N)
 
-  risB_extrap=fd_5p_d_solver_extrap(pot_l, xmin, xmax, 2*N)
+  risB_extrap=fd_5p_d_solver_extrap(pot_p, xmin, xmax, 2*N)
 
-  print('Laguerre\'s equation on [{:+.2g}, {:+.2f}]'.format(xmin, xmax))
-  print('3 points finite difference with Dirichlet boundary conditions, N={:d}'.format(N))
+  print('Paine problem (see Pryce "Numerical solution of Sturm-Liouville problems" App. A)')
+  print('shooting using initial values from fd_3p_d_solver_extrap with N={:d}'.format(N))
   print('')
   print('{:>2s} {:>15s} {:>15s} {:>15s} {:>15s} {:>15s} {:>15s}'.format("n", "N", "2N", "3N", "4N", "2N extr", "exact"))
   for i in range(0, 20, 2):
-     print('{:>2d} {:>15.10f} {:>15.10f} {:>15.10f} {:>15.10f} {:>15.10f} {:>15.10f}'.format(i, risA[i], risB[i], risC[i], risD[i], risB_extrap[i], 4*(i+1)))
+     print('{:>2d} {:>15.10f} {:>15.10f} {:>15.10f} {:>15.10f} {:>15.10f} {:>15.10f}'.format(i, risA[i], risB[i], risC[i], risD[i], risB_extrap[i], exact_p(i)))
 
   print("**********************")
