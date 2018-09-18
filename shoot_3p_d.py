@@ -192,4 +192,22 @@ if __name__=="__main__":
      ris, finalN=shooting_3p_d(pot_p, xmin, xmax, 10000, risA[i], goal)
      print('{:>2d} {:>15.10f} {:>15.10f} {:>15d} {:>15.10f}'.format(i, risA[i], ris, finalN, exact_p(i)))
 
+  print("")
+  print("")
+
+
+  print("Test of the integrator with the problem -y''+xy=y, y(0)=0, y'(0)=1")
+  print("for which y(1)=0.91862888852788662812")
+  print("")
+
+  def pot_l(x):
+    return x
+
+  exact_ris=0.91862888852788662812
+
+  print("{:>5s} {:>15s}".format("N", "err*N^2"))
+  for N in range(20, 210, 20):
+    ris = shooting_solver_forw_3p(pot_l, 0, 1, N, 1.0, 1.0)
+    print("{:>5d} {:>15.10f}".format(N, (exact_ris-ris)*pow(N,2)))
+
   print("**********************")
