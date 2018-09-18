@@ -6,7 +6,7 @@ from scipy import linalg
 from scipy import optimize
 import sys
 
-__all__ = ["shooting_solver_forw_3p", "shooting_d"]
+__all__ = ["shooting_solver_forw_3p", "shooting_3p_d"]
 
 #***************************
 #library functions
@@ -53,7 +53,7 @@ def shooting_solver_forw_3p(potential, xmin, xmax, N, E, deriv):
 
 
 
-def shooting_d(potential, xmin, xmax, initial_N, initial_E, tolerance, maxiter=500):
+def shooting_3p_d(potential, xmin, xmax, initial_N, initial_E, tolerance, maxiter=500):
   """Shooting using 3 points discretization with Dirichlet boundary conditions.
 
   potential = potential energy to be used
@@ -117,7 +117,7 @@ if __name__=="__main__":
   print('')
   print('{:>2s} {:>15s} {:>15s} {:>15s} {:>15s}'.format("n", "fd_3p_d", "shooting", "steps", "exact"))
   for i in range(0, 10, 2):
-     ris, finalN=shooting_d(pot_h, xmin, xmax, N, risA[i], 1.0e-4)
+     ris, finalN=shooting_3p_d(pot_h, xmin, xmax, N, risA[i], 1.0e-4)
      print('{:>2d} {:>15.10f} {:>15.10f} {:>15d} {:>15.10f}'.format(i, risA[i], ris, finalN, 2*i+1))
   
   print("")
@@ -187,7 +187,7 @@ if __name__=="__main__":
   print('')
   print('{:>2s} {:>15s} {:>15s} {:>15s} {:>15s}'.format("n", "fd_3p_d", "shooting", "steps", "exact"))
   for i in range(0, 10, 2):
-     ris, finalN=shooting_d(pot_p, xmin, xmax, 10000, risA[i], 1.0e-4)
+     ris, finalN=shooting_3p_d(pot_p, xmin, xmax, 10000, risA[i], 1.0e-4)
      print('{:>2d} {:>15.10f} {:>15.10f} {:>15d} {:>15.10f}'.format(i, risA[i], ris, finalN, exact_p(i)))
 
 
