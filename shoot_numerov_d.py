@@ -6,14 +6,14 @@ from scipy import linalg
 from scipy import optimize
 import sys
 
-__all__ = ["shooting_solver_forw_3p", "shooting_3p_d"]
+__all__ = ["shooting_solver_forw_numerov", "shooting_numerov_d"]
 
 #***************************
 #library functions
 
-def shooting_solver_forw_3p(potential, xmin, xmax, N, E, deriv):
-  """Solver of the shooting equation (discretized using a 3 point discretization
-  of the second derivative) with initial condition 
+def shooting_solver_forw_numerov(potential, xmin, xmax, N, E, deriv):
+  """Solver of the shooting equation (discretized using the numerov method) 
+  with initial condition 
   
   psi(xmin)=0
   psi'(xmin)=deriv
@@ -40,12 +40,17 @@ def shooting_solver_forw_3p(potential, xmin, xmax, N, E, deriv):
 
   step=(xmax-xmin)/N
 
+  def V(x):
+    return potential(x)-E
+
   # starting values at xmin
   psi_im1=0
-  psi_i=deriv*step
-
+  psi_i=step*deriv*(1-V(xmin+2*step)*pow(step,2)/12)/(1 -V(xmin+step)*pow(step,2)/4 + V(xmin+step)*V(xmin+2*step)*pow(step, 4)/18.0)
+  # see e.g. Quiroz Gonzalez and Thompson "Getting started with Numerov's method" COMPUTERS IN PHYSICS, VOL. 11, 514 (1997)
+ 
   for i in range(1, N, 1):
-    psi_ip1=2*psi_i - psi_im1 - step*step*(E*psi_i-potential(xmin+i*step)*psi_i)
+    psi_ip1 = (2*psi_i -psi_im1 +(10*V(xmin+i*step)*psi_i +V(xmin+(i-1)*step)*psi_im1)*pow(step,2)/12 ) / (1 - V(xmin+(i+1)*step)*pow(step,2)/12)
+
     psi_im1=psi_i 
     psi_i=psi_ip1
 
@@ -53,8 +58,8 @@ def shooting_solver_forw_3p(potential, xmin, xmax, N, E, deriv):
 
 
 
-def shooting_3p_d(potential, xmin, xmax, initial_N, initial_E, tolerance, maxiter=500):
-  """Shooting using 3 points discretization with Dirichlet boundary conditions.
+def shooting_numerov_d(potential, xmin, xmax, initial_N, initial_E, tolerance, maxiter=500):
+  """Shooting using the numerov method with Dirichlet boundary conditions.
 
   potential = potential energy to be used
   the problem is defined on the interval [xmin, xmax]
@@ -68,7 +73,7 @@ def shooting_3p_d(potential, xmin, xmax, initial_N, initial_E, tolerance, maxite
   locN=initial_N
   
   def f(x):
-    return shooting_solver_forw_3p(potential, xmin, xmax, locN, x, 1.0e-8)
+    return shooting_solver_forw_numerov(potential, xmin, xmax, locN, x, 1.0e-8)
 
   #initial value
   ris0=optimize.newton(f, x0=initial_E, tol=tolerance)
@@ -113,12 +118,12 @@ if __name__=="__main__":
   risA=fd.fd_3p_d_solver(pot_h, xmin, xmax, N)
 
   print('Harmonic oscillator on [{:+.2f}, {:+.2f}]'.format(xmin, xmax))
-  print('shooting using 3 points discretization and initial values from fd_3p_d_solver_extrap with N={:d}'.format(N))
+  print('shooting using Numerov method and initial values from fd_3p_d_solver_extrap with N={:d}'.format(N))
   print('target precision {:g}'.format(goal))
   print('')
   print('{:>2s} {:>15s} {:>15s} {:>15s} {:>15s}'.format("n", "fd_3p_d", "shooting", "steps", "exact"))
   for i in range(0, 10, 2):
-     ris, finalN=shooting_3p_d(pot_h, xmin, xmax, N, risA[i], goal)
+     ris, finalN=shooting_numerov_d(pot_h, xmin, xmax, N, risA[i], goal)
      print('{:>2d} {:>15.10f} {:>15.10f} {:>15d} {:>15.10f}'.format(i, risA[i], ris, finalN, 2*i+1))
   
   print("")
@@ -184,12 +189,17 @@ if __name__=="__main__":
   risA=fd.fd_3p_d_solver(pot_p, xmin, xmax, N)
 
   print('Paine problem (see Pryce "Numerical solution of Sturm-Liouville problems" App. A)')
-  print('shooting using 3 points discretization and initial values from fd_3p_d_solver_extrap with N={:d}'.format(N))
+  print('shooting using Numerov method and initial values from fd_3p_d_solver_extrap with N={:d}'.format(N))
   print('target precision {:g}'.format(goal))
   print('')
   print('{:>2s} {:>15s} {:>15s} {:>15s} {:>15s}'.format("n", "fd_3p_d", "shooting", "steps", "known"))
   for i in range(0, 10, 2):
-     ris, finalN=shooting_3p_d(pot_p, xmin, xmax, 10000, risA[i], goal)
+     ris, finalN=shooting_numerov_d(pot_p, xmin, xmax, 10000, risA[i], goal)
      print('{:>2d} {:>15.10f} {:>15.10f} {:>15d} {:>15.10f}'.format(i, risA[i], ris, finalN, exact_p(i)))
+
+
+  print("")
+  print("")
+  
 
   print("**********************")
