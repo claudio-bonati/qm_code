@@ -11,12 +11,12 @@ __all__ = ["shooting_solver_forw_3p", "shooting_3p_d"]
 #***************************
 #library functions
 
-def shooting_solver_forw_3p(potential, xmin, xmax, N, E, deriv):
+def shooting_solver_forw_3p(potential, xmin, xmax, N, E, y0, y0_prime):
   """Solver of the shooting equation (discretized using a 3 point discretization
   of the second derivative) with initial condition 
   
-  psi(xmin)=0
-  psi'(xmin)=deriv
+  psi(xmin)=y0
+  psi'(xmin)=y0_prime
 
   potential = potential energy to be used
   the problem is defined on the interval [xmin, xmax]
@@ -41,8 +41,8 @@ def shooting_solver_forw_3p(potential, xmin, xmax, N, E, deriv):
   step=(xmax-xmin)/N
 
   # starting values at xmin
-  psi_im1=0
-  psi_i=deriv*step
+  psi_im1=y0
+  psi_i=y0+y0_prime*step+(potential(xmin)-E)*y0*pow(step,2)/2
 
   for i in range(1, N, 1):
     psi_ip1=2*psi_i - psi_im1 - step*step*(E*psi_i-potential(xmin+i*step)*psi_i)
@@ -68,7 +68,7 @@ def shooting_3p_d(potential, xmin, xmax, initial_N, initial_E, tolerance, maxite
   locN=initial_N
   
   def f(x):
-    return shooting_solver_forw_3p(potential, xmin, xmax, locN, x, 1.0e-8)
+    return shooting_solver_forw_3p(potential, xmin, xmax, locN, x, 0.0, 1.0e-8)
 
   #initial value
   ris0=optimize.newton(f, x0=initial_E, tol=tolerance)
@@ -196,18 +196,18 @@ if __name__=="__main__":
   print("")
 
 
-  print("Test of the integrator with the problem -y''+xy=y, y(0)=0, y'(0)=1")
-  print("for which y(1)=0.91862888852788662812")
+  print("Test of the integrator with the problem -y''+xy=1.5y, y(0)=0.2, y'(0)=1.0")
+  print("for which y(1)=0.934250481751617")
   print("")
 
   def pot_l(x):
     return x
 
-  exact_ris=0.91862888852788662812
+  exact_ris=0.934250481751617
 
   print("{:>5s} {:>15s}".format("N", "err*N^2"))
   for N in range(20, 210, 20):
-    ris = shooting_solver_forw_3p(pot_l, 0, 1, N, 1.0, 1.0)
+    ris = shooting_solver_forw_3p(pot_l, 0, 1, N, 1.5, 0.2, 1.0)
     print("{:>5d} {:>15.10f}".format(N, (exact_ris-ris)*pow(N,2)))
 
   print("**********************")

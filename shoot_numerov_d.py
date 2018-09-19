@@ -11,12 +11,12 @@ __all__ = ["shooting_solver_forw_numerov", "shooting_numerov_d"]
 #***************************
 #library functions
 
-def shooting_solver_forw_numerov(potential, xmin, xmax, N, E, deriv):
+def shooting_solver_forw_numerov(potential, xmin, xmax, N, E, y0, y0_prime):
   """Solver of the shooting equation (discretized using the numerov method) 
   with initial condition 
   
-  psi(xmin)=0
-  psi'(xmin)=deriv
+  psi(xmin)=y0
+  psi'(xmin)=y0_prime
 
   potential = potential energy to be used
   the problem is defined on the interval [xmin, xmax]
@@ -43,10 +43,14 @@ def shooting_solver_forw_numerov(potential, xmin, xmax, N, E, deriv):
   def V(x):
     return potential(x)-E
 
-  # starting values at xmin
-  psi_im1=0
-  psi_i=step*deriv*(1-V(xmin+2*step)*pow(step,2)/12)/(1 -V(xmin+step)*pow(step,2)/4 + V(xmin+step)*V(xmin+2*step)*pow(step, 4)/18.0)
-  # see e.g. Quiroz Gonzalez and Thompson "Getting started with Numerov's method" COMPUTERS IN PHYSICS, VOL. 11, 514 (1997)
+  # see Quiroz Gonzalez and Thompson "Getting started with Numerov's method" COMPUTERS IN PHYSICS, VOL. 11, 514 (1997)
+  # DOI: 10.1063/1.168593 
+
+  psi_im1=y0
+
+  num = y0*(1-V(xmin+2*step)*pow(step,2)/24) +step*y0_prime*(1-V(xmin+2*step)*pow(step,2)/12) +pow(step,2)*7*y0*V(xmin)/24.0 -pow(step, 4)*V(xmin+2*step)*y0*V(xmin)/36.0
+  den = 1 -V(xmin+step)*pow(step,2)/4 + V(xmin+step)*V(xmin+2*step)*pow(step, 4)/18.0
+  psi_i=num/den
  
   for i in range(1, N, 1):
     psi_ip1 = (2*psi_i -psi_im1 +(10*V(xmin+i*step)*psi_i +V(xmin+(i-1)*step)*psi_im1)*pow(step,2)/12 ) / (1 - V(xmin+(i+1)*step)*pow(step,2)/12)
@@ -73,7 +77,7 @@ def shooting_numerov_d(potential, xmin, xmax, initial_N, initial_E, tolerance, m
   locN=initial_N
   
   def f(x):
-    return shooting_solver_forw_numerov(potential, xmin, xmax, locN, x, 1.0e-8)
+    return shooting_solver_forw_numerov(potential, xmin, xmax, locN, x, 0, 1.0e-8)
 
   #initial value
   ris0=optimize.newton(f, x0=initial_E, tol=tolerance)
@@ -201,18 +205,18 @@ if __name__=="__main__":
   print("")
   print("")
 
-  print("Test of the integrator with the problem -y''+xy=y, y(0)=0, y'(0)=1")
-  print("for which y(1)=0.91862888852788662812")
+  print("Test of the integrator with the problem -y''+xy=1.5y, y(0)=0.2, y'(0)=1.0")
+  print("for which y(1)=0.934250481751617")
   print("")
 
   def pot_l(x):
     return x
 
-  exact_ris=0.91862888852788662812
+  exact_ris=0.934250481751617
 
   print("{:>5s} {:>15s}".format("N", "err*N^4"))
   for N in range(20, 210, 20):
-    ris = shooting_solver_forw_numerov(pot_l, 0, 1, N, 1.0, 1.0)
+    ris = shooting_solver_forw_numerov(pot_l, 0, 1, N, 1.5, 0.2, 1.0)
     print("{:>5d} {:>15.10f}".format(N, (exact_ris-ris)*pow(N,4)))
 
   print("**********************")
