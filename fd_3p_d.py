@@ -194,12 +194,12 @@ if __name__=="__main__":
 
   N=50
 
-  risA=fd_5p_d_solver(pot_p, xmin, xmax, N)
-  risB=fd_5p_d_solver(pot_p, xmin, xmax, 2*N)
-  risC=fd_5p_d_solver(pot_p, xmin, xmax, 3*N)
-  risD=fd_5p_d_solver(pot_p, xmin, xmax, 4*N)
+  risA=fd_3p_d_solver(pot_p, xmin, xmax, N)
+  risB=fd_3p_d_solver(pot_p, xmin, xmax, 2*N)
+  risC=fd_3p_d_solver(pot_p, xmin, xmax, 3*N)
+  risD=fd_3p_d_solver(pot_p, xmin, xmax, 4*N)
 
-  risB_extrap=fd_5p_d_solver_extrap(pot_p, xmin, xmax, 2*N)
+  risB_extrap=fd_3p_d_solver_extrap(pot_p, xmin, xmax, 2*N)
 
   print('Paine problem (see Pryce "Numerical solution of Sturm-Liouville problems" App. A)')
   print('shooting using initial values from fd_3p_d_solver_extrap with N={:d}'.format(N))
