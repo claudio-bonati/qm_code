@@ -2,7 +2,6 @@
 
 import fd_3p_d as fd
 import numpy as np
-from scipy import linalg
 from scipy import optimize
 import sys
 
