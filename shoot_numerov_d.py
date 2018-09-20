@@ -165,7 +165,7 @@ def shooting_numerov_d(potential, xmin, xmax, initial_N, initial_E, tolerance, m
 
   while delta>tolerance and iteration < maxiter:
     locN*=2 
-    ris1=optimize.newton(f, x0=ris0, tol=tolerance, maxiter=500)
+    ris1=optimize.newton(f, x0=initial_E, tol=tolerance, maxiter=500)
     delta=abs(ris1-ris0)
     ris0=ris1
     iteration+=1
@@ -205,7 +205,7 @@ def middle_shooting_numerov_d(potential, xmin, xmax, initial_N, initial_E, toler
 
   while delta>tolerance and iteration < maxiter:
     locN*=2 
-    ris1=optimize.root(f, x0=ris0.x, tol=tolerance)
+    ris1=optimize.root(f, x0=np.array([initial_E, -1.0e-8]), tol=tolerance)
     delta=abs(ris1.x[0]-ris0.x[0])
     ris0=ris1
     iteration+=1
@@ -247,7 +247,7 @@ if __name__=="__main__":
   print('')
   print('{:>2s} {:>15s} {:>15s} {:>15s} {:>15s}'.format("n", "fd_3p_d", "shooting", "steps", "exact"))
   for i in range(0, 10, 2):
-     ris, finalN=middle_shooting_numerov_d(pot_h, xmin, xmax, N, risA[i], goal)
+     ris, finalN=shooting_numerov_d(pot_h, xmin, xmax, N, risA[i], goal)
      print('{:>2d} {:>15.10f} {:>15.10f} {:>15d} {:>15.10f}'.format(i, risA[i], ris, finalN, 2*i+1))
   
   print("")
@@ -318,7 +318,7 @@ if __name__=="__main__":
   print('')
   print('{:>2s} {:>15s} {:>15s} {:>15s} {:>15s}'.format("n", "fd_3p_d", "shooting", "steps", "known"))
   for i in range(0, 10, 2):
-     ris, finalN = middle_shooting_numerov_d(pot_p, xmin, xmax, 10000, risA[i], goal)
+     ris, finalN = shooting_numerov_d(pot_p, xmin, xmax, 10000, risA[i], goal)
      print('{:>2d} {:>15.10f} {:>15.10f} {:>15d} {:>15.10f}'.format(i, risA[i], ris, finalN, exact_p(i)))
 
 
