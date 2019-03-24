@@ -17,7 +17,7 @@ fd_3p_p.py          finite differences with 3 points discretization of the secon
 fd_5p_d.py          finite differences with 5 points discretization of the second
                     derivative and Dirichlet boundary conditions.
 
-fd_5p_d.py          finite differences with 5 points discretization of the second
+fd_5p_p.py          finite differences with 5 points discretization of the second
                     derivative and periodic boundary conditions.
 
 fft_p.py            Fourier method with periodic boundary conditions.
