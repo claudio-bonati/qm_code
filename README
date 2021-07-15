@@ -30,7 +30,7 @@ shoot_3p_d.py       Implementation of the shooting method for Dirichlet boundary
 shoot_numerov_d.py  Implementation of the shooting method for Dirichlet boundary 
                     conditions using the Numerov integration scheme
 
-Other
+Other codes
 
 spectral_terms.py   Compute the spectral terms for equivalent electrons in one or 
                     two shells
