@@ -41,7 +41,7 @@ try:
   with open("qm_solver/fd_3p_d.py") as f: 
     pass
 except:
-  print("Get the package 'statanalysis' from")
+  print("Get the package 'qm_solver' from")
   print("https://github.com/claudio-bonati/qm_solver")
   print("and put it in this directory.")
   print()
