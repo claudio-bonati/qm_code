@@ -1,12 +1,13 @@
-****************************************
-*** PYTHON3 PACKAGE FOR THE SOLUTION ***
-***    OF 1D SCHRODINGER EQUATION    ***
-***         (\hbar=1, m=1/2)         ***
+***************************************
+***       PYTHON3 PACKAGE FOR       ***
+*** QUANTUM MECHANICS RELATED STUFF ***
 ****************************************
 
 All the scripts have a __main__ for unit testing or explanations that can be
 used as an example of use.
 
+
+Numerical methods for 1D Schrodinger equation (with \hbar=1 and m=1/2)
 
 fd_3p_d.py          finite differences with 3 points discretization of the second
                     derivative and Dirichlet boundary conditions.
@@ -29,9 +30,14 @@ shoot_3p_d.py       Implementation of the shooting method for Dirichlet boundary
 shoot_numerov_d.py  Implementation of the shooting method for Dirichlet boundary 
                     conditions using the Numerov integration scheme
 
+Other
+
+spectral_terms.py   Compute the spectral terms for equivalent electrons in one or 
+                    two shells
+
 *********************************
 
-If the folder "qm_solver" is saved in the working area one can use the
+If the folder "qm_code" is saved in the working area one can use the
 following lines to add it to the pythonpath:
 
 import sys
@@ -41,13 +47,13 @@ try:
   with open("qm_solver/fd_3p_d.py") as f: 
     pass
 except:
-  print("Get the package 'qm_solver' from")
-  print("https://github.com/claudio-bonati/qm_solver")
+  print("Get the package 'qm_code' from")
+  print("https://github.com/claudio-bonati/qm_code")
   print("and put it in this directory.")
   print()
   print("If you have 'git' installed you can use")
-  print("git clone https://github.com/claudio-bonati/qm_solver")
+  print("git clone https://github.com/claudio-bonati/qm_code")
   print()
   sys.exit(1)
 
-sys.path.append(os.getcwd()+"/qm_solver")
+sys.path.append(os.getcwd()+"/qm_code")
