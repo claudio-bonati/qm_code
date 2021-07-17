@@ -44,10 +44,10 @@ def terms_oneshell(lvalue, numele):
 
   #we use a list of 2(2*lvalue+1) numbers corresponding to
   #[{l_z=-lvalue,s_z=1/2},{l_z=-lvalue+1,s_z=1/2}.....{l_z=lvalue,s_z=1/2}, 
-  #[{l_z=-lvalue,s_z=-1/2},{l_z=-lvalue+1,s_z=-1/2}.....{l_z=lvalue,s_z=-1/2}, 
+  #{l_z=-lvalue,s_z=-1/2},{l_z=-lvalue+1,s_z=-1/2}.....{l_z=lvalue,s_z=-1/2}]
 
   #create all differente permutations of numele ones and 2(2*lvalue+1)-numele zeros
-  confs=list(place_ones(2*(2*lvalue+1),numele))
+  confs=list( place_ones(2*(2*lvalue+1),numele) )
 
   #[-lvalue, ...,-1,0,1,....,lvalue]
   forprod=np.arange(-lvalue,lvalue+1,1,dtype=int)
@@ -55,8 +55,8 @@ def terms_oneshell(lvalue, numele):
   LSlist=[]
   # list of [L_z,2*S_z] values
   for element in confs:
-    twoSz=np.sum(element[:2*lvalue+1])-np.sum(element[2*lvalue+1:])
-    Lz=np.sum(np.multiply(np.add(element[:2*lvalue+1],element[2*lvalue+1:]),forprod))
+    twoSz=np.sum(element[:2*lvalue+1]) - np.sum(element[2*lvalue+1:])
+    Lz=np.sum( np.multiply( np.add(element[:2*lvalue+1],element[2*lvalue+1:]) ,forprod) )
     LSlist.append([Lz,twoSz])
   LSlist.sort(reverse=True) 
  
@@ -67,7 +67,7 @@ def terms_oneshell(lvalue, numele):
 
     L=element[0]
     twoSp1=element[1]+1
-    terms.append(tuple([twoSp1,L]))
+    terms.append(tuple([twoSp1,L])) #tuple are needed to use "set" later on
 
     #remove the identified multplet from the list
     for l in range(-L,L+1,1):
@@ -141,10 +141,10 @@ def terms_twoshell(lvalue1, numele1, lvalue2, numele2):
     element1=element[0]
     element2=element[1]
 
-    twoSz =np.sum(element1[:2*lvalue1+1])-np.sum(element1[2*lvalue1+1:])  
-    twoSz+=np.sum(element2[:2*lvalue2+1])-np.sum(element2[2*lvalue2+1:]) 
-    Lz =np.sum(np.multiply(np.add(element1[:2*lvalue1+1],element1[2*lvalue1+1:]),forprod1)) 
-    Lz+=np.sum(np.multiply(np.add(element2[:2*lvalue2+1],element2[2*lvalue2+1:]),forprod2))
+    twoSz =np.sum(element1[:2*lvalue1+1]) - np.sum(element1[2*lvalue1+1:])  
+    twoSz+=np.sum(element2[:2*lvalue2+1]) - np.sum(element2[2*lvalue2+1:]) 
+    Lz =np.sum( np.multiply( np.add(element1[:2*lvalue1+1],element1[2*lvalue1+1:]) ,forprod1) ) 
+    Lz+=np.sum( np.multiply( np.add(element2[:2*lvalue2+1],element2[2*lvalue2+1:]) ,forprod2) )
     LSlist.append([Lz,twoSz])
   LSlist.sort(reverse=True) 
  
@@ -155,7 +155,7 @@ def terms_twoshell(lvalue1, numele1, lvalue2, numele2):
 
     L=element[0]
     twoSp1=element[1]+1
-    terms.append(tuple([twoSp1,L]))
+    terms.append(tuple([twoSp1,L]))  #tuple are needed to use "set" later on
 
     #remove the identified multplet from the list
     for l in range(-L,L+1,1):
@@ -195,21 +195,23 @@ if __name__=="__main__":
   print()
 
   print('Single shell')
-  ell=int(input("Insert the orbital momentum of the shell: "))
-  ele=int(input("Insert the number of electrons in the shell: "))
   print()
 
-  terms_oneshell(ell,ele)
+  print('Simple example')
+  terms_oneshell(1,2)
   print()
+
+  print('Not simple example')
+  terms_oneshell(2,4)
   print()
 
   print('Two shell')
-  ell1=int(input("Insert the orbital momentum of the shell 1: "))
-  ele1=int(input("Insert the number of electrons in the shell 1: "))
-  ell2=int(input("Insert the orbital momentum of the shell 2: "))
-  ele2=int(input("Insert the number of electrons in the shell2 : "))
-
   print()
 
-  terms_twoshell(ell1, ele1, ell2, ele2)
- 
+  print('Simple example')
+  terms_twoshell(0, 1, 1, 1)
+  print()
+
+  print('Not simple example')
+  terms_twoshell(1, 2, 2, 3)
+  print()
