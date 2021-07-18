@@ -40,11 +40,11 @@ def fd_3p_p_create_matrix(potential, xmin, xmax, N):
     M[i][i]=2.0+step*step*potential(xmin+i*step)
 
   for i in range(0, N-1, 1):
-    M[i][i+1]=1.0
-    M[i+1][i]=1.0
+    M[i][i+1]=-1.0
+    M[i+1][i]=-1.0
 
-  M[0][N-1]=1.0
-  M[N-1][0]=1.0
+  M[0][N-1]=-1.0
+  M[N-1][0]=-1.0
 
   return M 
 
