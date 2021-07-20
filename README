@@ -8,8 +8,7 @@ used as an example of use.
 
 Numerical methods for 1D Schrodinger equation (with \hbar=1 and m=1):
 
-richardson_extr.py    Richardson extrapolation of approximate solvers
-
+richardson_extr.py    Richardson extrapolation of solvers
 sch_solver_dense.py   solvers using dense matrices (Finite Difference Methods, FFT)
 sch_solver_shoot.py   solvers using shooting (3 point FDM, Numerov)
 sch_solver_sparse.py  solvers using sparse matrices (FDMs)
