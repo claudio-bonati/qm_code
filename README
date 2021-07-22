@@ -18,6 +18,11 @@ Other:
 spectral_terms.py   Compute the spectral terms for equivalent electrons in one or 
                     two shells
 
+Examples for nontrivial physical systems:
+
+test_anharmonic.py
+test_double_well.py
+
 *********************************
 
 If the folder "qm_code" is saved in the working area one can use the
