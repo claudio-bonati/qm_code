@@ -18,28 +18,54 @@ if __name__=="__main__":
     return (1./2.)*x*x+g*pow(x,4)
 
  g=0.0
+
+ IRcut=optimize.newton(lambda x : anharmonic_pot(x)-50, x0=10, tol=1.0e-8)
+
+ size=200
+
+ solver=sparse.FDM_Sparse_5pD(anharmonic_pot, -IRcut, IRcut, 3)
+ ris1, ris2, ris3=solver.solve(size) 
+ 
+ solver1=shoot.Shoot_Numerov(anharmonic_pot, -IRcut, IRcut)
+ ris1=solver1.solve_up_to_toll(ris1, 1.0e-6)
+ ris2=solver1.solve_up_to_toll(ris2, 1.0e-6)
+ ris3=solver1.solve_up_to_toll(ris3, 1.0e-6)
+ size1=solver1.size
+
+ solver2=shoot.Shoot_Numerov(anharmonic_pot, -2*IRcut, 2*IRcut)
+ ris4=solver2.solve_up_to_toll(ris1, 1.0e-6)
+ ris5=solver2.solve_up_to_toll(ris2, 1.0e-6)
+ ris6=solver2.solve_up_to_toll(ris3, 1.0e-6)
+ size2=solver2.size
+
+ print('{:>.5f} {:>15.10f} {:>6.4e} '.format(g, ris1, np.abs(ris4-ris1)), end='')
+ print('{:>15.10f} {:>6.4e} '.format(ris2, np.abs(ris5-ris2)), end='')
+ print('{:>15.10f} {:>6.4e} '.format(ris3, np.abs(ris6-ris3)), end='')
+ print('{:>4.2f} '.format(IRcut))
+ sys.stdout.flush() 
+
+ g+=0.02
+
  while g<0.5:
 
    IRcut=optimize.newton(lambda x : anharmonic_pot(x)-50, x0=10, tol=1.0e-8)
 
-   size=200
+   solver1=shoot.Shoot_Numerov(anharmonic_pot, -IRcut, IRcut)
+   ris1=solver1.solve_up_to_toll(ris1, 1.0e-6, size1)
+   ris2=solver1.solve_up_to_toll(ris2, 1.0e-6, size1)
+   ris3=solver1.solve_up_to_toll(ris3, 1.0e-6, size1)
+   size1=solver1.size
 
-   solver=sparse.FDM_Sparse_5pD(anharmonic_pot, -IRcut, IRcut, 3)
-   seed1, seed2, seed3=solver.solve(size) 
- 
-   solver=shoot.Shoot_Numerov(anharmonic_pot, -IRcut, IRcut)
-   ris1=solver.solve_up_to_toll(seed1, 1.0e-8)
-   ris2=solver.solve_up_to_toll(seed2, 1.0e-8)
-   ris3=solver.solve_up_to_toll(seed3, 1.0e-8)
-
-   solver=shoot.Shoot_Numerov(anharmonic_pot, -2*IRcut, 2*IRcut)
-   ris4=solver.solve_up_to_toll(seed1, 1.0e-8)
-   ris5=solver.solve_up_to_toll(seed2, 1.0e-8)
-   ris6=solver.solve_up_to_toll(seed3, 1.0e-8)
+   solver2=shoot.Shoot_Numerov(anharmonic_pot, -2*IRcut, 2*IRcut)
+   ris4=solver2.solve_up_to_toll(ris1, 1.0e-6, size2)
+   ris5=solver2.solve_up_to_toll(ris2, 1.0e-6, size2)
+   ris6=solver2.solve_up_to_toll(ris3, 1.0e-6, size2)
+   size2=solver2.size
 
    print('{:>.5f} {:>15.10f} {:>6.4e} '.format(g, ris1, np.abs(ris4-ris1)), end='')
    print('{:>15.10f} {:>6.4e} '.format(ris2, np.abs(ris5-ris2)), end='')
    print('{:>15.10f} {:>6.4e} '.format(ris3, np.abs(ris6-ris3)), end='')
    print('{:>4.2f} '.format(IRcut))
    sys.stdout.flush() 
+
    g+=0.02

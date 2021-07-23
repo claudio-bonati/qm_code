@@ -19,33 +19,61 @@ if __name__=="__main__":
   def double_well(x,V0,a,b):
     return well(x-b,V0,a) + well(x+b,V0,a)
 
-  V0=20
+  V0=30
   a=1
- 
   b=0
-  while b<3.5:
+
+  IRcut=optimize.newton(lambda x : double_well(x,V0,a,b)+0.1, x0=b+a, tol=1.0e-8)
+
+  size=200
+
+  solver=dense.FDM_Dense_5pD(lambda x : double_well(x, V0, a,b), -IRcut, IRcut)
+  aux=solver.solve(size) 
+  seed1=aux[0]
+  seed2=aux[1]
+  seed3=aux[2]
+  seed4=aux[3]
+ 
+  solver1=shoot.Shoot_Numerov(lambda x : double_well(x,V0,a,b), -IRcut, IRcut)
+  ris1=solver1.solve_up_to_toll(seed1, 1.0e-7)
+  ris2=solver1.solve_up_to_toll(seed2, 1.0e-7)
+  ris3=solver1.solve_up_to_toll(seed3, 1.0e-7)
+  ris4=solver1.solve_up_to_toll(seed4, 1.0e-7)
+  size1=solver1.size 
+
+  solver2=shoot.Shoot_Numerov(lambda x : double_well(x,V0,a,b), -2*IRcut, 2*IRcut)
+  ris5=solver2.solve_up_to_toll(seed1, 1.0e-7)
+  ris6=solver2.solve_up_to_toll(seed2, 1.0e-7)
+  ris7=solver2.solve_up_to_toll(seed3, 1.0e-7)
+  ris8=solver2.solve_up_to_toll(seed4, 1.0e-7)
+  size2=solver2.size
+
+  print('{:>.5f} {:>15.10f} {:>6.4e} '.format(b, ris1, np.abs(ris5-ris1)), end='')
+  print('{:>15.10f} {:>6.4e} '.format(ris2, np.abs(ris6-ris2)), end='')
+  print('{:>15.10f} {:>6.4e} '.format(ris3, np.abs(ris7-ris3)), end='')
+  print('{:>15.10f} {:>6.4e} '.format(ris4, np.abs(ris8-ris4)), end='')
+  print('{:>4.2f} '.format(IRcut))
+  sys.stdout.flush() 
+
+  b+=0.01
+
+  while b<3:
+
     IRcut=optimize.newton(lambda x : double_well(x,V0,a,b)+0.1, x0=b+a, tol=1.0e-8)
 
-    size=200
+    solver1=shoot.Shoot_Numerov(lambda x : double_well(x,V0,a,b), -IRcut, IRcut)
+    ris1=solver1.solve_up_to_toll(ris1, 1.0e-7, size1)
+    ris2=solver1.solve_up_to_toll(ris2, 1.0e-7, size1)
+    ris3=solver1.solve_up_to_toll(ris3, 1.0e-7, size1)
+    ris4=solver1.solve_up_to_toll(ris4, 1.0e-7, size1)
+    size1=solver1.size
 
-    solver=dense.FDM_Dense_5pD(lambda x : double_well(x, V0, a,b), -IRcut, IRcut)
-    aux=solver.solve(size) 
-    seed1=aux[0]
-    seed2=aux[1]
-    seed3=aux[2]
-    seed4=aux[3]
- 
-    solver=shoot.Shoot_Numerov(lambda x : double_well(x,V0,a,b), -IRcut, IRcut)
-    ris1=solver.solve_up_to_toll(seed1, 1.0e-8)
-    ris2=solver.solve_up_to_toll(seed2, 1.0e-8)
-    ris3=solver.solve_up_to_toll(seed3, 1.0e-8)
-    ris4=solver.solve_up_to_toll(seed4, 1.0e-8)
-
-    solver=shoot.Shoot_Numerov(lambda x : double_well(x,V0,a,b), -2*IRcut, 2*IRcut)
-    ris5=solver.solve_up_to_toll(seed1, 1.0e-8)
-    ris6=solver.solve_up_to_toll(seed2, 1.0e-8)
-    ris7=solver.solve_up_to_toll(seed3, 1.0e-8)
-    ris8=solver.solve_up_to_toll(seed4, 1.0e-8)
+    solver2=shoot.Shoot_Numerov(lambda x : double_well(x,V0,a,b), -2*IRcut, 2*IRcut)
+    ris5=solver2.solve_up_to_toll(ris1, 1.0e-7, size2)
+    ris6=solver2.solve_up_to_toll(ris2, 1.0e-7, size2)
+    ris7=solver2.solve_up_to_toll(ris3, 1.0e-7, size2)
+    ris8=solver2.solve_up_to_toll(ris4, 1.0e-7, size2)
+    size2=solver2.size
 
     print('{:>.5f} {:>15.10f} {:>6.4e} '.format(b, ris1, np.abs(ris5-ris1)), end='')
     print('{:>15.10f} {:>6.4e} '.format(ris2, np.abs(ris6-ris2)), end='')
@@ -54,4 +82,4 @@ if __name__=="__main__":
     print('{:>4.2f} '.format(IRcut))
     sys.stdout.flush() 
 
-    b+=0.02
+    b+=0.01
