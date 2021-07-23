@@ -166,10 +166,6 @@ class FFTPeriodic(DenseSolver):
     if not self.size%2==0:
       self.size+=1
 
-    if xmin>xmax:
-      print("ERROR: xmax has to be larger than xmin!")
-      sys.exit(1)
-
     finegrid=65536 #=2^{16} any large power of 2 would work
     if(100*self.size>finegrid):
       tmp=int(np.log2(self.size))

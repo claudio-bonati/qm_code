@@ -27,15 +27,15 @@ if __name__=="__main__":
  ris1, ris2, ris3=solver.solve(size) 
  
  solver1=shoot.Shoot_Numerov(anharmonic_pot, -IRcut, IRcut)
- ris1=solver1.solve_up_to_toll(ris1, 1.0e-6)
- ris2=solver1.solve_up_to_toll(ris2, 1.0e-6)
- ris3=solver1.solve_up_to_toll(ris3, 1.0e-6)
+ ris1=solver1.solve_up_to_toll(ris1, 1.0e-4)
+ ris2=solver1.solve_up_to_toll(ris2, 1.0e-4)
+ ris3=solver1.solve_up_to_toll(ris3, 1.0e-4)
  size1=solver1.size
 
  solver2=shoot.Shoot_Numerov(anharmonic_pot, -2*IRcut, 2*IRcut)
- ris4=solver2.solve_up_to_toll(ris1, 1.0e-6)
- ris5=solver2.solve_up_to_toll(ris2, 1.0e-6)
- ris6=solver2.solve_up_to_toll(ris3, 1.0e-6)
+ ris4=solver2.solve_up_to_toll(ris1, 1.0e-4)
+ ris5=solver2.solve_up_to_toll(ris2, 1.0e-4)
+ ris6=solver2.solve_up_to_toll(ris3, 1.0e-4)
  size2=solver2.size
 
  print('{:>.5f} {:>15.10f} {:>6.4e} '.format(g, ris1, np.abs(ris4-ris1)), end='')
@@ -51,15 +51,15 @@ if __name__=="__main__":
    IRcut=optimize.newton(lambda x : anharmonic_pot(x)-50, x0=10, tol=1.0e-8)
 
    solver1=shoot.Shoot_Numerov(anharmonic_pot, -IRcut, IRcut)
-   ris1=solver1.solve_up_to_toll(ris1, 1.0e-6, size1)
-   ris2=solver1.solve_up_to_toll(ris2, 1.0e-6, size1)
-   ris3=solver1.solve_up_to_toll(ris3, 1.0e-6, size1)
+   ris1=solver1.solve_up_to_toll(ris1, 1.0e-4, size1)
+   ris2=solver1.solve_up_to_toll(ris2, 1.0e-4, size1)
+   ris3=solver1.solve_up_to_toll(ris3, 1.0e-4, size1)
    size1=solver1.size
 
    solver2=shoot.Shoot_Numerov(anharmonic_pot, -2*IRcut, 2*IRcut)
-   ris4=solver2.solve_up_to_toll(ris1, 1.0e-6, size2)
-   ris5=solver2.solve_up_to_toll(ris2, 1.0e-6, size2)
-   ris6=solver2.solve_up_to_toll(ris3, 1.0e-6, size2)
+   ris4=solver2.solve_up_to_toll(ris1, 1.0e-4, size2)
+   ris5=solver2.solve_up_to_toll(ris2, 1.0e-4, size2)
+   ris6=solver2.solve_up_to_toll(ris3, 1.0e-4, size2)
    size2=solver2.size
 
    print('{:>.5f} {:>15.10f} {:>6.4e} '.format(g, ris1, np.abs(ris4-ris1)), end='')
