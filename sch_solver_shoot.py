@@ -68,7 +68,7 @@ class ShootingSolverDirichlet:
       delta=np.abs(ris1-ris0)
       ris0=ris1
 
-    #if the algorthms end size/2 is enough
+    #if the algorthm ends size/2 is enough
     self.size=int(size/2)
   
     return ris0
