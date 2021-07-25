@@ -10,8 +10,8 @@ if __name__=="__main__":
 
   # Compute the first four levels of the double well 
 
-  # single well of depth V0 and size \approx a
-  # for |x|<<0 we have well(x,V0, a)\approx -V0/4 + V0/(16 a^2)x^2
+  # single well of depth V0/4 and size \approx a/sqrt(V0)
+  # for |x|<<a we have well(x,V0,a)\approx -V0/4 + V0/(16 a^2)x^2
   def well(x, V0, a):
     return -V0/(1.0+np.exp(x/a))/(1.0+np.exp(-x/a))  
 
@@ -53,7 +53,8 @@ if __name__=="__main__":
 
     b+=0.1
 
-  ## METHOD 2: shooting
+  ## METHOD 2: shooting 
+  ## (with this method it is difficult to identify the nearly degenerate eigenvalues) 
   #
   # IRcut=optimize.newton(lambda x : double_well(x,V0,a,b)+0.1, x0=b+a, tol=1.0e-8)
 
