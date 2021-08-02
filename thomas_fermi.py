@@ -14,12 +14,15 @@ class ThomasFermi:
      y''=y^(3/2)/sqrt(t)
      y(0)=1, y(r->\infty)=0
   """
+
+
   def __init__(self, T=20):
     """ Solution on the interval [0:T]
     """
     self.step=None
     self.y0prime=None
     self.T=T
+
 
   def solveinitialproblem(self, y0prime, step, printvalues=False):
     """Using t=x^2, \psi(x)=y(t) and \phi(x)=(d\psi/dx)/x
@@ -95,6 +98,7 @@ class ThomasFermi:
 
     return end, yT 
 
+
   def solve_with_step(self, step, acc):
     """Find the ``critical'' value of the derivative in zero by using bisection.
 
@@ -130,7 +134,6 @@ class ThomasFermi:
       x=(y0_L+y0_R)/2.0
       ris, yT =self.solveinitialproblem(x, step)
 
-
     while(np.abs((yTR-yTL)/(yTR+yTL)*2)>acc):
       if(ris==2):
          y0_R=x
@@ -143,6 +146,7 @@ class ThomasFermi:
       ris, yT =self.solveinitialproblem(x, step)
 
     return x, yT
+
 
   def solve(self, acc, initialstep=2.0e-2):
     """Find the ``critical'' value of the derivative in zero by using bisection.
