@@ -17,6 +17,7 @@ Other:
 
 spectral_terms.py   Compute the spectral terms for equivalent electrons in one or 
                     two shells
+thomas_fermi.py     Solution of the Thomas-Fermi equation
 
 Examples for nontrivial physical systems:
 
