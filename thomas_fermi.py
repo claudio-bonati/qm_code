@@ -12,6 +12,8 @@ __all__ = ["ThomasFermi"]
 #***************************
 #library functions and classes
 
+DEBUG=False
+
 class ThomasFermi:
   """Class for the numerical solution of the Thomas-Fermi equation
      y''=y^(3/2)/sqrt(t)
@@ -44,8 +46,8 @@ class ThomasFermi:
        \psi(0)=1
        \phi(0)=2*y0prime
 
-       With these changes the equations to be integrated have C^1 r.h.s.
-       We then itegrate these equations with the simple Euler scheme.
+       With these changes the equations to be integrated have C^1 r.h.s. and
+       can be integrated with a standard Runge-Kutta 4th order integrator.
  
        This function returns [end, y(self.T)] with
 
@@ -53,13 +55,31 @@ class ThomasFermi:
               2 if y0prime is too large (and psi starts to increase)
        y(self.T) : estimated value of y(self.T) 
     """ 
-    
+   
     psi_i=1
     phi_i=2*y0prime
     x=0
 
-    psi_ip1=psi_i+step*x*phi_i
-    phi_ip1=phi_i+step*4*np.power(psi_i,1.5)
+    k_psi1=x*phi_i
+    k_phi1=4*np.power(psi_i,1.5)
+
+    k_psi2=(x+step/2)*(phi_i+step*k_phi1/2.0)
+    if(psi_i+step*k_psi1/2.0<0):
+      end=1
+    k_phi2=4*np.power(psi_i+step*k_psi1/2.0,1.5)
+
+    k_psi3=(x+step/2)*(phi_i+step*k_phi2/2.0)
+    if(psi_i+step*k_psi2/2.0<0):
+      end=1
+    k_phi3=4*np.power(psi_i+step*k_psi2/2.0,1.5)
+
+    k_psi4=(x+step)*(phi_i+step*k_phi3)
+    if(psi_i+step*k_psi3<0):
+      end=1
+    k_phi4=4*np.power(psi_i+step*k_psi3,1.5)
+
+    psi_ip1=psi_i+step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+    phi_ip1=phi_i+step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
     x+=step
 
     tL=None
@@ -70,8 +90,29 @@ class ThomasFermi:
       psi_i=psi_ip1
       phi_i=phi_ip1
 
-      psi_ip1=psi_i+step*x*phi_i
-      phi_ip1=phi_i+step*4*np.power(psi_i,1.5)
+      k_psi1=x*phi_i
+      k_phi1=4*np.power(psi_i,1.5)
+
+      k_psi2=(x+step/2)*(phi_i+step*k_phi1/2.0)
+      if(psi_i+step*k_psi1/2.0<0):
+        end=1
+        break
+      k_phi2=4*np.power(psi_i+step*k_psi1/2.0,1.5)
+
+      k_psi3=(x+step/2)*(phi_i+step*k_phi2/2.0)
+      if(psi_i+step*k_psi2/2.0<0):
+        end=1
+        break
+      k_phi3=4*np.power(psi_i+step*k_psi2/2.0,1.5)
+
+      k_psi4=(x+step)*(phi_i+step*k_phi3)
+      if(psi_i+step*k_psi3<0):
+        end=1
+        break
+      k_phi4=4*np.power(psi_i+step*k_psi3,1.5)
+  
+      psi_ip1=psi_i+step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+      phi_ip1=phi_i+step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
       x+=step
 
       if(x*x<self.T and (x+step)*(x+step)>=self.T):
@@ -86,7 +127,7 @@ class ThomasFermi:
         end=1
       if(psi_ip1>psi_i):
         end=2
-
+  
     if(tL!=None and tR!=None):
       yT=yL+(yR-yL)/(tR-tL)*(self.T-tL)
     else:
@@ -129,8 +170,12 @@ class ThomasFermi:
 
       x=(y0_L+y0_R)/2.0
       ris, yT =self.solveinitialproblem(x, step)
+      if(DEBUG):
+        print("debug1: ", y0_L, y0_R, y0_L-y0_R)
 
-    while(np.abs((yTR-yTL)/(yTR+yTL)*2)>acc):
+    index=0
+    maxindex=50
+    while(np.abs((yTR-yTL)/(yTR+yTL)*2)>acc and index<maxindex):
       if(ris==2):
          y0_R=x
          yTR=yT
@@ -141,10 +186,21 @@ class ThomasFermi:
       x=(y0_L+y0_R)/2.0
       ris, yT =self.solveinitialproblem(x, step)
 
+      index+=1
+
+      if(DEBUG):
+        print("debug1: ", y0_L, y0_R, y0_L-y0_R, np.abs((yTR-yTL)/(yTR+yTL)*2) )
+
+    if(index==maxindex):
+      print("Warning: maximum iteration reached")
+
+    if(DEBUG):
+      print("debug1: done")
+
     return x, yT
 
 
-  def solve(self, acc, initialstep=2.0e-2):
+  def solve(self, acc, initialstep=2.0e-1):
     """Find the ``critical'' value of the derivative in zero by using bisection.
 
        acc : relative accuracy of y(self.T) to be reached
@@ -157,9 +213,15 @@ class ThomasFermi:
   
     step1=initialstep
     ris1, yT_1 = self.solve_with_step(step1, acc)
+    if(DEBUG):
+      print("debug2: y0'=", ris1, ", yT=", yT_1, ", step=",step1) 
+      print('')
 
     step2=initialstep/2
     ris2, yT_2 = self.solve_with_step(step2, acc)
+    if(DEBUG):
+      print("debug2: y0'=", ris2, ", yT=", yT_2, ", step=",step2) 
+      print('')
 
     while(np.abs((yT_2-yT_1)/(yT_1+yT_2)*2)>acc):
       step1=step2
@@ -168,6 +230,12 @@ class ThomasFermi:
 
       step2=step1/2
       ris2, yT_2=self.solve_with_step(step2, acc)
+      if(DEBUG):
+        print("debug2: y0'=", ris2, ", yT=", yT_2, ", step=",step2) 
+        print('')
+    if(DEBUG):
+      print("debug2: done")
+      print('')
 
     self.y0prime=ris2
     self.step=step2
@@ -189,8 +257,20 @@ class ThomasFermi:
     listt.append(x*x)
     listpsi.append(psi_i)
 
-    psi_ip1=psi_i+self.step*x*phi_i
-    phi_ip1=phi_i+self.step*4*np.power(psi_i,1.5)
+    k_psi1=x*phi_i
+    k_phi1=4*np.power(psi_i,1.5)
+
+    k_psi2=(x+self.step/2)*(phi_i+self.step*k_phi1/2.0)
+    k_phi2=4*np.power(psi_i+self.step*k_psi1/2.0,1.5)
+
+    k_psi3=(x+self.step/2)*(phi_i+self.step*k_phi2/2.0)
+    k_phi3=4*np.power(psi_i+self.step*k_psi2/2.0,1.5)
+
+    k_psi4=(x+self.step)*(phi_i+self.step*k_phi3)
+    k_phi4=4*np.power(psi_i+self.step*k_psi3,1.5)
+
+    psi_ip1=psi_i+self.step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+    phi_ip1=phi_i+self.step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
     x+=self.step
     listt.append(x*x)
     listpsi.append(psi_ip1)
@@ -199,13 +279,28 @@ class ThomasFermi:
       psi_i=psi_ip1
       phi_i=phi_ip1
 
-      psi_ip1=psi_i+self.step*x*phi_i
-      phi_ip1=phi_i+self.step*4*np.power(psi_i,1.5)
+      k_psi1=x*phi_i
+      k_phi1=4*np.power(psi_i,1.5)
+
+      k_psi2=(x+self.step/2)*(phi_i+self.step*k_phi1/2.0)
+      k_phi2=4*np.power(psi_i+self.step*k_psi1/2.0,1.5)
+
+      k_psi3=(x+self.step/2)*(phi_i+self.step*k_phi2/2.0)
+      k_phi3=4*np.power(psi_i+self.step*k_psi2/2.0,1.5)
+
+      k_psi4=(x+self.step)*(phi_i+self.step*k_phi3)
+      k_phi4=4*np.power(psi_i+self.step*k_psi3,1.5)
+  
+      psi_ip1=psi_i+self.step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+      phi_ip1=phi_i+self.step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
       x+=self.step
       listt.append(x*x)
       listpsi.append(psi_ip1)
 
-    interp=interpolate.interp1d(listt, listpsi, 'quadratic')
+    t=np.array(listt)
+    psi=np.array(listpsi)
+ 
+    interp=interpolate.InterpolatedUnivariateSpline(t, psi, k=3)
     return interp
    
 
@@ -219,26 +314,29 @@ if __name__=="__main__":
   print("UNIT TESTING")
   print()
 
-  print('Solve the Thomas-Fermi equation up to x=60 (x=rescaled variable)')
-  print('with an accuracy of 1/10^4')
+  Tmax=100
+  acc=1.0e-4
+
+  print('Solve the Thomas-Fermi equation up to x=',Tmax,'(x=rescaled variable)')
+  print('with a relative accuracy of', acc)
   print('')
 
-
-  test=ThomasFermi(T=60)
-  test.solve(1.0e-4)
+  test=ThomasFermi(T=Tmax)
+  test.solve(acc)
   interp=test.get_spline_interp()
 
-  #for x in np.arange(0, 50.0001, 0.01):
+  #for x in np.arange(0, Tmax+0.0001, 0.01):
   #  print(' {:>5f} {:15.10f}'.format(x, interp(x)))
 
   b=np.power(3./4.*np.pi, 2./3.)/2.  ##\approx 0.885
-  def density(r):  ## from Landau 3 eq. 70.9
+  def density(r):                    ## from Landau 3 eq. 70.9
     return 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(r/b), 3./2.)
   def integrand(r):
     return 4*np.pi*r*r*density(r)
 
-  print('Integral up to R=50 (atomic units) of the electron density')
-  ris=integrate.quad(integrand, 0, 50)
+  Rmax=80
+  print('Integral up to R=', Rmax,'(atomic units) of the electron density')
+  ris=integrate.quad(integrand, 0, Rmax)
   print(ris[0])
   print('should be 1 but the solution has an heavy tail...')
   print('')
