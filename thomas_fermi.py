@@ -2,6 +2,9 @@
 
 import math
 import numpy as np
+import scipy.integrate as integrate
+import scipy.interpolate as interpolate
+import scipy.optimize as optimize
 import sys
 
 __all__ = ["ThomasFermi"]
@@ -24,7 +27,7 @@ class ThomasFermi:
     self.T=T
 
 
-  def solveinitialproblem(self, y0prime, step, printvalues=False):
+  def solveinitialproblem(self, y0prime, step):
     """Using t=x^2, \psi(x)=y(t) and \phi(x)=(d\psi/dx)/x
        we have
 
@@ -54,14 +57,10 @@ class ThomasFermi:
     psi_i=1
     phi_i=2*y0prime
     x=0
-    if(printvalues):
-      print('{:>15.10f} {:>15.10f} {:>15.10f}'.format(x*x, psi_i, phi_i/2))
 
     psi_ip1=psi_i+step*x*phi_i
     phi_ip1=phi_i+step*4*np.power(psi_i,1.5)
     x+=step
-    if(printvalues):
-      print('{:>15.10f} {:>15.10f} {:>15.10f}'.format(x*x, psi_ip1, phi_ip1/2))
 
     tL=None
     tR=None
@@ -74,9 +73,6 @@ class ThomasFermi:
       psi_ip1=psi_i+step*x*phi_i
       phi_ip1=phi_i+step*4*np.power(psi_i,1.5)
       x+=step
-
-      if(printvalues and (x-step)*(x-step)<=self.T):
-        print('{:>15.10f} {:>15.10f} {:>15.10f}'.format(x*x, psi_ip1, phi_ip1/2))
 
       if(x*x<self.T and (x+step)*(x+step)>=self.T):
         tL=x*x
@@ -177,16 +173,40 @@ class ThomasFermi:
     self.step=step2
 
 
-  def print_values(self):
-    """Print on screen the values of the solution of the T.F. equation and of its derivative
+  def get_spline_interp(self):
+    """A spline interpolation of the solution is returned
     """
     if(self.y0prime==None or self.step==None):
       print("ERROR: solve has to be called before this function")
       sys.exit(1)
 
-    self.solveinitialproblem(self.y0prime, self.step, printvalues=True)
- 
+    listt=[]
+    listpsi=[]
 
+    psi_i=1
+    phi_i=2*self.y0prime
+    x=0
+    listt.append(x*x)
+    listpsi.append(psi_i)
+
+    psi_ip1=psi_i+self.step*x*phi_i
+    phi_ip1=phi_i+self.step*4*np.power(psi_i,1.5)
+    x+=self.step
+    listt.append(x*x)
+    listpsi.append(psi_ip1)
+
+    while(np.power(x+self.step,2)<self.T):
+      psi_i=psi_ip1
+      phi_i=phi_ip1
+
+      psi_ip1=psi_i+self.step*x*phi_i
+      phi_ip1=phi_i+self.step*4*np.power(psi_i,1.5)
+      x+=self.step
+      listt.append(x*x)
+      listpsi.append(psi_ip1)
+
+    interp=interpolate.interp1d(listt, listpsi, 'quadratic')
+    return interp
    
 
 #***************************
@@ -199,12 +219,44 @@ if __name__=="__main__":
   print("UNIT TESTING")
   print()
 
-  # Solve the T.F. equation up to T=20, with 
-  # a relative accuracy of 1.0e-4 at T=20
+  print('Solve the Thomas-Fermi equation up to x=60 (x=rescaled variable)')
+  print('with an accuracy of 1/10^4')
+  print('')
 
-  test=ThomasFermi(T=20)
+
+  test=ThomasFermi(T=60)
   test.solve(1.0e-4)
-  test.print_values()
+  interp=test.get_spline_interp()
+
+  for x in np.arange(0, 50.0001, 0.01):
+    print(' {:>5f} {:15.10f}'.format(x, interp(x)))
+
+  b=np.power(3./4.*np.pi, 2./3.)/2.  ##\approx 0.885
+  def density(r):  ## from Landau 3 eq. 70.9
+    return 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(r/b), 3./2.)
+  def integrand(r):
+    return 4*np.pi*r*r*density(r)
+
+  print('Integral up to R=50 (atomic units) of the electron density')
+  ris=integrate.quad(integrand, 0, 50)
+  print(ris[0])
+  print('should be 1 but the solution has an heavy tail...')
+  print('')
+ 
+  def func_to_vanish(r):
+    ris=integrate.quad(integrand, 0, r)
+    return ris[0]-0.5
+
+  print('Radius (in atomic units) contaning 50% of the charge for Z=1')
+  ris=optimize.newton(func_to_vanish, 1.4) 
+  print(ris)
+  print('According to Landau this should be approx 1.33')
+  print('According to Galindo and Pasqual it should be approx 1.682')
+  print('Note that Table 2 of par.70 of Landau 3 is nicely reproduced by our data')
+ 
+
+
+
 
   print("**********************")
 
