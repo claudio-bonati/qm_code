@@ -328,7 +328,7 @@ if __name__=="__main__":
   interp=test.get_spline_interp()
 
   #for x in np.arange(0, Tmax+0.0001, 0.01):
-  #  print(' {:>5f} {:15.10f}'.format(x, interp(x)))
+  #  print('{:5f} {:15.10f}'.format(x, float(interp(x))))
 
   b=np.power(3./4.*np.pi, 2./3.)/2.  ## approx 0.885
   def density(r):                    ## from Landau 3 eq. 70.9
