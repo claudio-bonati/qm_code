@@ -53,7 +53,8 @@ class ThomasFermi:
 
        end  : 1 if y0prime is too small (and psi crosses zero)
               2 if y0prime is too large (and psi starts to increase)
-       y(self.T) : estimated value of y(self.T) 
+       y(self.T) : estimated value of y(self.T) (None if the range of validity 
+                   of the solution does not reach self.T) 
     """ 
    
     psi_i=1
@@ -148,13 +149,13 @@ class ThomasFermi:
     y0_L=-2
     risL, yTL = self.solveinitialproblem(y0_L, step)
     if(risL != 1):
-      print("ERROR: risL must be smalle than the true value")
+      print("ERROR: y0_L must be smaller than the true value of the derivative in the origin")
       sys.exit(1)
 
     y0_R=-1
     risR, yTR = self.solveinitialproblem(y0_R, step)
     if(risR != 2):
-      print("ERROR: risR must be larger than the true value")
+      print("ERROR: y0_R must be larger than the true value of the derivative in the origin")
       sys.exit(1)
 
     x=(y0_L+y0_R)/2.0
@@ -174,7 +175,8 @@ class ThomasFermi:
         print("debug1: ", y0_L, y0_R, y0_L-y0_R)
 
     index=0
-    maxindex=50
+    maxindex=50  # when the limit of double precision is reached the accuracy does not increase anymore. 
+                 # This is the reason for the check on the number of iterations 
     while(np.abs((yTR-yTL)/(yTR+yTL)*2)>acc and index<maxindex):
       if(ris==2):
          y0_R=x
@@ -241,8 +243,8 @@ class ThomasFermi:
     self.step=step2
 
 
-  def get_spline_interp(self):
-    """A spline interpolation of the solution is returned
+  def get_spline_interp(self, order=3):
+    """A spline interpolation of the given order of the solution is returned
     """
     if(self.y0prime==None or self.step==None):
       print("ERROR: solve has to be called before this function")
@@ -299,8 +301,8 @@ class ThomasFermi:
 
     t=np.array(listt)
     psi=np.array(listpsi)
- 
-    interp=interpolate.InterpolatedUnivariateSpline(t, psi, k=3)
+
+    interp=interpolate.InterpolatedUnivariateSpline(t, psi, k=order)
     return interp
    
 
@@ -328,7 +330,7 @@ if __name__=="__main__":
   #for x in np.arange(0, Tmax+0.0001, 0.01):
   #  print(' {:>5f} {:15.10f}'.format(x, interp(x)))
 
-  b=np.power(3./4.*np.pi, 2./3.)/2.  ##\approx 0.885
+  b=np.power(3./4.*np.pi, 2./3.)/2.  ## approx 0.885
   def density(r):                    ## from Landau 3 eq. 70.9
     return 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(r/b), 3./2.)
   def integrand(r):
