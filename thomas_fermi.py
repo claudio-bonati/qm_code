@@ -317,7 +317,7 @@ if __name__=="__main__":
   print()
 
   Tmax=100
-  acc=1.0e-4
+  acc=1.0e-5
 
   print('Solve the Thomas-Fermi equation up to x=',Tmax,'(x=rescaled variable)')
   print('with a relative accuracy of', acc)
@@ -332,9 +332,14 @@ if __name__=="__main__":
 
   b=np.power(3./4.*np.pi, 2./3.)/2.  ## approx 0.885
   def density(r):                    ## from Landau 3 eq. 70.9
-    return 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(r/b), 3./2.)
+     return 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(r/b), 3./2.)
   def integrand(r):
-    return 4*np.pi*r*r*density(r)
+    # 4 pi r^2 density(r)
+    return 4*np.pi*np.sqrt(r)* 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(1.0/b), 3./2.)
+
+  #for r in np.arange(0, b*Tmax+0.0001, 0.001):
+  #  aux=integrate.quad(integrand,0,r)
+  #  print('{:5f} {:15.10f} {:15.10f} {:15.10f}'.format(r, float(integrand(r)),float(aux[0]), float(aux[1])))
 
   Rmax=80
   print('Integral up to R=', Rmax,'(atomic units) of the electron density')
