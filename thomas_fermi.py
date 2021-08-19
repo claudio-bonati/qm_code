@@ -330,34 +330,35 @@ if __name__=="__main__":
   #for x in np.arange(0, Tmax+0.0001, 0.01):
   #  print('{:5f} {:15.10f}'.format(x, float(interp(x))))
 
+  Z=1
   b=np.power(3./4.*np.pi, 2./3.)/2.  ## approx 0.885
   def density(r):                    ## from Landau 3 eq. 70.9
-     return 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(r/b), 3./2.)
+     return Z*Z*32./9./np.power(np.pi,3) * np.power(interp(r*np.power(Z,1./3.)/b)/(r*np.power(Z,1./3.)/b), 3./2.)
   def integrand(r):
     # 4 pi r^2 density(r)
-    return 4*np.pi*np.sqrt(r)* 32./9./np.power(np.pi,3) * np.power(interp(r/b)/(1.0/b), 3./2.)
+    return Z*Z*4*np.pi*np.sqrt(r)* 32./9./np.power(np.pi,3) * np.power(interp(r*np.power(Z,1./3.)/b)/(np.power(Z,1./3.)/b), 3./2.)
 
   #for r in np.arange(0, b*Tmax+0.0001, 0.001):
   #  aux=integrate.quad(integrand,0,r)
   #  print('{:5f} {:15.10f} {:15.10f} {:15.10f}'.format(r, float(integrand(r)),float(aux[0]), float(aux[1])))
 
   Rmax=80
-  print('Integral up to R=', Rmax,'(atomic units) of the electron density')
+  print('Integral up to R=', Rmax,'(atomic units) of the electron density (Z=',Z,')')
   ris=integrate.quad(integrand, 0, Rmax)
   print(ris[0])
-  print('should be 1 but the solution has an heavy tail...')
+  print('should be ',Z,'but the solution has an heavy tail...')
   print('')
  
   def func_to_vanish(r):
     ris=integrate.quad(integrand, 0, r)
-    return ris[0]-0.5
+    return ris[0]-0.5*Z
 
-  print('Radius (in atomic units) contaning 50% of the charge for Z=1')
+  print('Radius (in atomic units) contaning 50% of the charge')
   ris=optimize.newton(func_to_vanish, 1.4) 
   print(ris)
-  print('According to Landau this should be approx 1.33')
-  print('According to Galindo and Pasqual it should be approx 1.682')
-  print('Note that Table 2 of par.70 of Landau 3 is nicely reproduced by our data')
+  print('According to Landau this should be approx 1.33/Z^(1./3.)=',1.33/np.power(Z,1./3.))
+  print('According to Galindo and Pasqual it should be approx 1.682/Z^(1./3.)=', 1.682/np.power(Z,1./3.))
+  print('[Note that Table 2 of par.70 of Landau 3 is nicely reproduced by our data]')
  
 
 
