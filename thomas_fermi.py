@@ -386,14 +386,14 @@ if __name__=="__main__":
   print('According to Landau this should be approx 1.33/Z^(1./3.)={:.2f}'.format(1.33/np.power(Z,1./3.)))
   print("but this is likely a typo, since Table 2 of par.70 of Landau 3")
   print("is nicely reproduced. E.g.:")
-  print(" {:5.2f} {:.6f}".format(0.06, interp(0.06)))
-  print(" {:5.2f} {:.6f}".format(0.1, interp(0.1)))
-  print(" {:5.2f} {:.6f}".format(0.5, interp(0.5)))
-  print(" {:5.2f} {:.6f}".format(1, interp(1)))
-  print(" {:5.2f} {:.6f}".format(4, interp(4)))
-  print(" {:5.2f} {:.6f}".format(10, interp(10)))
-  print(" {:5.2f} {:.6f}".format(20, interp(20)))
-  print(" {:5.2f} {:.6f}".format(50, interp(50)))
+  print(" {:5.2f} {:.6f}".format(0.06, float(interp(0.06))))
+  print(" {:5.2f} {:.6f}".format(0.1, float(interp(0.1))))
+  print(" {:5.2f} {:.6f}".format(0.5, float(interp(0.5))))
+  print(" {:5.2f} {:.6f}".format(1,   float(interp(1))))
+  print(" {:5.2f} {:.6f}".format(4,   float(interp(4))))
+  print(" {:5.2f} {:.6f}".format(10,  float(interp(10))))
+  print(" {:5.2f} {:.6f}".format(20,  float(interp(20))))
+  print(" {:5.2f} {:.6f}".format(50,  float(interp(50))))
 
 
 
