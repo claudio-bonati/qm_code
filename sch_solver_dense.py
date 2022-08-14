@@ -69,7 +69,7 @@ class FDM_Dense_3pD(DenseSolver):
     self.solutionmethod="FDM_3pD"
     self.approxorder=2
 
-    self.step=(self.xmax-self.xmin)/float(self.size)
+    self.step=(self.xmax-self.xmin)/float(self.size+1)
     invstep2=1.0/np.power(self.step,2)
 
     self.M=np.zeros((self.size, self.size), float)
@@ -111,21 +111,35 @@ class FDM_Dense_5pD(DenseSolver):
     self.solutionmethod="FDM_5pD"
     self.approxorder=4
 
-    self.step=(self.xmax-self.xmin)/float(self.size)
-    invstep2=1.0/np.power(self.step,2)
+    self.step=(self.xmax-self.xmin)/float(self.size+1)
+    invstep2=1.0/(24.0*np.power(self.step,2))
 
     self.M=np.zeros((self.size, self.size), float)
     for i in range(self.size):
       self.M[i, i] = self.V(self.xmin+i*self.step)
-      self.M[i, i] += 5.0/4.0*invstep2
+      self.M[i, i] += 30*invstep2
     
     for i in range(self.size-1):
-      self.M[i, i+1] = -4.0/6.0*invstep2 
-      self.M[i+1, i] = -4.0/6.0*invstep2
+      self.M[i, i+1] = -16.0*invstep2 
+      self.M[i+1, i] = -16.0*invstep2
 
     for i in range(self.size-2):
-      self.M[i, i+2] = 1.0/24.0*invstep2 
-      self.M[i+2, i] = 1.0/24.0*invstep2
+      self.M[i, i+2] = 1.0*invstep2 
+      self.M[i+2, i] = 1.0*invstep2
+
+    # boundary points require non-centered differences 
+
+    self.M[0,0]=15.0*invstep2
+    self.M[0,1]=4.0*invstep2
+    self.M[0,2]=-14.0*invstep2
+    self.M[0,3]=6.0*invstep2
+    self.M[0,4]=-1.0*invstep2
+
+    self.M[self.size-1,self.size-1-4]=-1.0*invstep2
+    self.M[self.size-1,self.size-1-3]=6.0*invstep2
+    self.M[self.size-1,self.size-1-2]=-14.0*invstep2
+    self.M[self.size-1,self.size-1-1]=4.0*invstep2
+    self.M[self.size-1,self.size-1]=15.0*invstep2
 
 
 

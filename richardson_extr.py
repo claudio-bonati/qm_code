@@ -2,7 +2,6 @@
 
 import numpy as np
 import sch_solver_dense as ssd
-import sch_solver_sparse as sss
 import sys
 
 __all__ = ["richardson_extrap"]
@@ -91,19 +90,11 @@ if __name__=="__main__":
   print("FDM Dense three point discretizion with Dirichlet b.c.")
   print()
   _test_dense(ssd.FDM_Dense_3pD, pot_h, xmin, xmax, N, numeigs)
-  print("****")
-  print("FDM Sparse three point discretizion with Dirichlet b.c.")
-  print()
-  _test_sparse(sss.FDM_Sparse_3pD, pot_h, xmin, xmax, N, numeigs)
 
   print("****")
   print("FDM Dense five point discretizion with Dirichlet b.c.")
   print()
   _test_dense(ssd.FDM_Dense_5pD, pot_h, xmin, xmax, N, numeigs)
-  print("****")
-  print("FDM Sparse five point discretizion with Dirichlet b.c.")
-  print()
-  _test_sparse(sss.FDM_Sparse_5pD, pot_h, xmin, xmax, N, numeigs)
 
   print("**********************")
 

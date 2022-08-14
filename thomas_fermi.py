@@ -14,202 +14,192 @@ __all__ = ["ThomasFermi"]
 
 DEBUG=False
 
-# For some mathematical giustification of the method used see e.g.
-# https://www.pi.infn.it/~bonati/fisica3_2021/thomas_fermi.pdf
-
 class ThomasFermi:
   """Class for the numerical solution of the Thomas-Fermi equation
-     chi''(x)=chi^{3/2}(x)/sqrt(x)
-     chi(0)=1, chi(r->\infty)=0
+     y''=y^(3/2)/sqrt(t)
+     y(0)=1, y(r->\infty)=0
   """
 
 
-  def __init__(self, rmax=20):
-    """ Solution on the interval [0:rmax]
+  def __init__(self, T=20):
+    """ Solution on the interval [0:T]
     """
     self.step=None
-    self.chi0prime=None
-    self.chi0prime_err=None
-    self.rmax=rmax
+    self.y0prime=None
+    self.T=T
 
 
-  def solveinitialproblem(self, chi0prime, step):
-    """Using t=x^2, y(t)=chi(x) and z(x)=2 d\chi(x)/dx
+  def solveinitialproblem(self, y0prime, step):
+    """Using t=x^2, \psi(x)=y(t) and \phi(x)=(d\psi/dx)/x
        we have
 
-       y'(t)=t*z(t)
-       z'(t)=4*y^{3/2}(t)
+       d\psi/dx=2 x dy/dt
+       d^2\psi/dx^2=\phi + 4x \psi^{3/2} (using T-F)
+
+       hence (now primes denote d/dx)
+
+       \psi'(x)=x \phi(x)
+       \phi'(x)=4 \psi^{3/2}(x) (obtained from the definition of \phi)
 
        with intial conditions 
 
-       y(0)=1
-       z(0)=2*chi0prime
+       \psi(0)=1
+       \phi(0)=2*y0prime
 
        With these changes the equations to be integrated have C^1 r.h.s. and
        can be integrated with a standard Runge-Kutta 4th order integrator.
  
-       Returns
-       end            : 1 if chi0prime is too small (and y(t) crosses zero)
-                        2 if chi0prime is too large (and y(t) starts to increase)
-       chi(self.rmax) : estimated value of chi(self.rmax) (None if the range of 
-                        validity of the solution does not reach self.rmax) 
+       This function returns [end, y(self.T)] with
+
+       end  : 1 if y0prime is too small (and psi crosses zero)
+              2 if y0prime is too large (and psi starts to increase)
+       y(self.T) : estimated value of y(self.T) (None if the range of validity 
+                   of the solution does not reach self.T) 
     """ 
-  
-    y_i=1
-    z_i=2*chi0prime
-    t=0
+   
+    psi_i=1
+    phi_i=2*y0prime
+    x=0
 
-    k_y1=t*z_i
-    k_z1=4*np.power(y_i,1.5)
+    k_psi1=x*phi_i
+    k_phi1=4*np.power(psi_i,1.5)
 
-    k_y2=(t+step/2)*(z_i+step*k_z1/2.0)
-    if(y_i+step*k_y1/2.0<0):
+    k_psi2=(x+step/2)*(phi_i+step*k_phi1/2.0)
+    if(psi_i+step*k_psi1/2.0<0):
       end=1
-    k_z2=4*np.power(y_i+step*k_y1/2.0,1.5)
+    k_phi2=4*np.power(psi_i+step*k_psi1/2.0,1.5)
 
-    k_y3=(t+step/2)*(z_i+step*k_z2/2.0)
-    if(y_i+step*k_y2/2.0<0):
+    k_psi3=(x+step/2)*(phi_i+step*k_phi2/2.0)
+    if(psi_i+step*k_psi2/2.0<0):
       end=1
-    k_z3=4*np.power(y_i+step*k_y2/2.0,1.5)
+    k_phi3=4*np.power(psi_i+step*k_psi2/2.0,1.5)
 
-    k_y4=(t+step)*(z_i+step*k_z3)
-    if(y_i+step*k_y3<0):
+    k_psi4=(x+step)*(phi_i+step*k_phi3)
+    if(psi_i+step*k_psi3<0):
       end=1
-    k_z4=4*np.power(y_i+step*k_y3,1.5)
+    k_phi4=4*np.power(psi_i+step*k_psi3,1.5)
 
-    y_ip1=y_i+step*(k_y1+2*k_y2+2*k_y3+k_y4)/6.0
-    z_ip1=z_i+step*(k_z1+2*k_z2+2*k_z3+k_z4)/6.0
-    t+=step
+    psi_ip1=psi_i+step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+    phi_ip1=phi_i+step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
+    x+=step
 
-    #xL will be the point closer to self.rmax on the left 
-    #xR will be the point closer to self.rmax on the right
-    xL=None
-    xR=None
+    tL=None
+    tR=None
 
     end=0
     while(end==0):
-      y_i=y_ip1
-      z_i=z_ip1
+      psi_i=psi_ip1
+      phi_i=phi_ip1
 
-      k_y1=t*z_i
-      k_z1=4*np.power(y_i,1.5)
+      k_psi1=x*phi_i
+      k_phi1=4*np.power(psi_i,1.5)
 
-      k_y2=(t+step/2)*(z_i+step*k_z1/2.0)
-      if(y_i+step*k_y1/2.0<0):
+      k_psi2=(x+step/2)*(phi_i+step*k_phi1/2.0)
+      if(psi_i+step*k_psi1/2.0<0):
         end=1
         break
-      k_z2=4*np.power(y_i+step*k_y1/2.0,1.5)
+      k_phi2=4*np.power(psi_i+step*k_psi1/2.0,1.5)
 
-      k_y3=(t+step/2)*(z_i+step*k_z2/2.0)
-      if(y_i+step*k_y2/2.0<0):
+      k_psi3=(x+step/2)*(phi_i+step*k_phi2/2.0)
+      if(psi_i+step*k_psi2/2.0<0):
         end=1
         break
-      k_z3=4*np.power(y_i+step*k_y2/2.0,1.5)
+      k_phi3=4*np.power(psi_i+step*k_psi2/2.0,1.5)
 
-      k_y4=(t+step)*(z_i+step*k_z3)
-      if(y_i+step*k_y3<0):
+      k_psi4=(x+step)*(phi_i+step*k_phi3)
+      if(psi_i+step*k_psi3<0):
         end=1
         break
-      k_z4=4*np.power(y_i+step*k_y3,1.5)
+      k_phi4=4*np.power(psi_i+step*k_psi3,1.5)
   
-      y_ip1=y_i+step*(k_y1+2*k_y2+2*k_y3+k_y4)/6.0
-      z_ip1=z_i+step*(k_z1+2*k_z2+2*k_z3+k_z4)/6.0
-      t+=step
+      psi_ip1=psi_i+step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+      phi_ip1=phi_i+step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
+      x+=step
 
-      if(t*t<self.rmax and (t+step)*(t+step)>=self.rmax):
-        xL=t*t
-        yL=y_ip1
+      if(x*x<self.T and (x+step)*(x+step)>=self.T):
+        tL=x*x
+        yL=psi_ip1
 
-      if((t-step)*(t-step)<self.rmax and t*t>=self.rmax):
-        xR=t*t
-        yR=y_ip1
+      if((x-step)*(x-step)<self.T and x*x>=self.T):
+        tR=x*x
+        yR=psi_ip1
 
-      if(y_ip1<0):
+      if(psi_ip1<0):
         end=1
-      if(y_ip1>y_i):
+      if(psi_ip1>psi_i):
         end=2
- 
-    if(xL!=None and xR!=None):
-      yrmax=yL+(yR-yL)/(xR-xL)*(self.rmax-xL)
+  
+    if(tL!=None and tR!=None):
+      yT=yL+(yR-yL)/(tR-tL)*(self.T-tL)
     else:
-      yrmax=None    
+      yT=None    
 
-    return end, yrmax 
+    return end, yT 
 
 
   def solve_with_step(self, step, acc):
     """Find the ``critical'' value of the derivative in zero by using bisection.
 
        step : integration step to be used 
-       acc  : relative accuracy of chi(self.rmax) to be reached
+       acc  : relative accuracy of y(self.T) to be reached
 
-       Returns:
-       chi0prime      : the estimated critical value of chi0prime
-       chi0prime_err  : the estimated error on the value of chi0prime
-       chi(self.rmax) : the estimated value of the soluzion in self.rmax
+       This function returns [y0prime, y(self.T)]
     """
-    if(DEBUG):
-      print("  debug1:  inside solve_with_step ", step, acc)
 
-    #here L stands for lower-bound, U for upper bound
-
-    yp0_L=-2
-    risL, yrmaxL = self.solveinitialproblem(yp0_L, step)
+    y0_L=-2
+    risL, yTL = self.solveinitialproblem(y0_L, step)
     if(risL != 1):
       print("ERROR: y0_L must be smaller than the true value of the derivative in the origin")
       sys.exit(1)
 
-    yp0_U=-1
-    risU, yrmaxU = self.solveinitialproblem(yp0_U, step)
-    if(risU != 2):
-      print("ERROR: y0_U must be larger than the true value of the derivative in the origin")
+    y0_R=-1
+    risR, yTR = self.solveinitialproblem(y0_R, step)
+    if(risR != 2):
+      print("ERROR: y0_R must be larger than the true value of the derivative in the origin")
       sys.exit(1)
 
-    yp0=(yp0_L+yp0_U)/2.0
-    ris, yrmax =self.solveinitialproblem(yp0, step)
+    x=(y0_L+y0_R)/2.0
+    ris, yT =self.solveinitialproblem(x, step)
  
-    while(yrmax==None or yrmaxL==None or yrmaxU==None):
+    while(yT==None or yTL==None or yTR==None):
       if(ris==2):
-         yp0_U=yp0
-         yrmaxU=yrmax
+         y0_R=x
+         yTR=yT
       else:
-         yp0_L=yp0
-         yrmaxL=yrmax
+         y0_L=x
+         yTL=yT
 
-      yp0=(yp0_L+yp0_U)/2.0
-      ris, yrmax =self.solveinitialproblem(yp0, step)
+      x=(y0_L+y0_R)/2.0
+      ris, yT =self.solveinitialproblem(x, step)
       if(DEBUG):
-        print("  debug1a: ", yp0_L, yp0_U, yp0_U-yp0_L)
+        print("debug1: ", y0_L, y0_R, y0_L-y0_R)
 
     index=0
     maxindex=50  # when the limit of double precision is reached the accuracy does not increase anymore. 
                  # This is the reason for the check on the number of iterations 
-    while(np.abs(2*(yrmaxU-yrmaxL)/(yrmaxU+yrmaxL))>acc and index<maxindex):
+    while(np.abs((yTR-yTL)/(yTR+yTL)*2)>acc and index<maxindex):
       if(ris==2):
-         yp0_U=yp0
-         yrmaxU=yrmax
+         y0_R=x
+         yTR=yT
       else:
-         yp0_L=yp0
-         yrmaxL=yrmax
+         y0_L=x
+         yTL=yT
 
-      yp0=(yp0_L+yp0_U)/2.0
-      ris, yrmax =self.solveinitialproblem(yp0, step)
+      x=(y0_L+y0_R)/2.0
+      ris, yT =self.solveinitialproblem(x, step)
 
       index+=1
 
       if(DEBUG):
-        print("  debug1b: ", yp0_L, yp0_U, yp0_U-yp0_L, np.abs(2*(yrmaxU-yrmaxL)/(yrmaxU+yrmaxL)) )
-
-    yp0err=yrmaxU-yrmaxL
+        print("debug1: ", y0_L, y0_R, y0_L-y0_R, np.abs((yTR-yTL)/(yTR+yTL)*2) )
 
     if(index==maxindex):
       print("Warning: maximum iteration reached")
 
     if(DEBUG):
-      print("  debug1:  done")
-      print("")
+      print("debug1: done")
 
-    return yp0, yp0err, yrmax
+    return x, yT
 
 
   def solve(self, acc, initialstep=2.0e-1):
@@ -218,112 +208,101 @@ class ThomasFermi:
        acc : relative accuracy of y(self.T) to be reached
        initialstep : initial step used in the integration
 
-       Fix:
-       chi0prime     : the estimated critical value of chi0prime
-       chi0prime_err : the estimated error on the value of chi0prime
-       step          : the integration step used
+       Returns:
+       y0prime : the estimated critical value of y0prime
+       step    : the integration step used
     """
   
-    if(DEBUG):
-      print("debug2:  inside solve", acc, initialstep) 
-
     step1=initialstep
-    ris1, ris1err, yrmax1 = self.solve_with_step(step1, acc)
+    ris1, yT_1 = self.solve_with_step(step1, acc)
     if(DEBUG):
-      print("debug2: y0'=", ris1, ", yrmax=", yrmax1, ", step=", step1) 
+      print("debug2: y0'=", ris1, ", yT=", yT_1, ", step=",step1) 
       print('')
 
     step2=initialstep/2
-    ris2, ris2err, yrmax2 = self.solve_with_step(step2, acc)
+    ris2, yT_2 = self.solve_with_step(step2, acc)
     if(DEBUG):
-      print("debug2: y0'=", ris2, ", yrmax=", yrmax2, ", step=", step2) 
+      print("debug2: y0'=", ris2, ", yT=", yT_2, ", step=",step2) 
       print('')
 
-    while(np.abs((yrmax2-yrmax1)/(yrmax1+yrmax2)*2)>acc):
+    while(np.abs((yT_2-yT_1)/(yT_1+yT_2)*2)>acc):
       step1=step2
       ris1=ris2
-      yrmax1=yrmax2
+      yT_1=yT_2
 
       step2=step1/2
-      ris2, ris2err, yrmax2=self.solve_with_step(step2, acc)
+      ris2, yT_2=self.solve_with_step(step2, acc)
       if(DEBUG):
-        print("debug2: y0'=", ris2, ", yrmax=", yrmax2, ", step=", step2) 
+        print("debug2: y0'=", ris2, ", yT=", yT_2, ", step=",step2) 
         print('')
     if(DEBUG):
       print("debug2: done")
       print('')
 
-    # the error associated with chi0prime is the quadrature sum of the
-    # error depending on the step and the error at fixed step
-    self.chi0prime_err=np.sqrt((ris2-ris1)*(ris2-ris1)+ris2err*ris2err)
-    self.chi0prime=ris2
+    self.y0prime=ris2
     self.step=step2
 
 
   def get_spline_interp(self, order=3):
     """A spline interpolation of the given order of the solution is returned
     """
-    if(self.chi0prime==None or self.step==None):
+    if(self.y0prime==None or self.step==None):
       print("ERROR: solve has to be called before this function")
       sys.exit(1)
 
-    # remember that x=t*t and chi(x)=y(t)
-    listx=[]
-    listchi=[]
+    listt=[]
+    listpsi=[]
 
-    y_i=1
-    z_i=2*self.chi0prime
-    t=0
+    psi_i=1
+    phi_i=2*self.y0prime
+    x=0
+    listt.append(x*x)
+    listpsi.append(psi_i)
 
-    listx.append(t*t)
-    listchi.append(y_i)
+    k_psi1=x*phi_i
+    k_phi1=4*np.power(psi_i,1.5)
 
-    k_y1=t*z_i
-    k_z1=4*np.power(y_i,1.5)
+    k_psi2=(x+self.step/2)*(phi_i+self.step*k_phi1/2.0)
+    k_phi2=4*np.power(psi_i+self.step*k_psi1/2.0,1.5)
 
-    k_y2=(t+self.step/2)*(z_i+self.step*k_z1/2.0)
-    k_z2=4*np.power(y_i+self.step*k_y1/2.0,1.5)
+    k_psi3=(x+self.step/2)*(phi_i+self.step*k_phi2/2.0)
+    k_phi3=4*np.power(psi_i+self.step*k_psi2/2.0,1.5)
 
-    k_y3=(t+self.step/2)*(z_i+self.step*k_z2/2.0)
-    k_z3=4*np.power(y_i+self.step*k_y2/2.0,1.5)
+    k_psi4=(x+self.step)*(phi_i+self.step*k_phi3)
+    k_phi4=4*np.power(psi_i+self.step*k_psi3,1.5)
 
-    k_y4=(t+self.step)*(z_i+self.step*k_z3)
-    k_z4=4*np.power(y_i+self.step*k_y3,1.5)
+    psi_ip1=psi_i+self.step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+    phi_ip1=phi_i+self.step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
+    x+=self.step
+    listt.append(x*x)
+    listpsi.append(psi_ip1)
 
-    y_ip1=y_i+self.step*(k_y1+2*k_y2+2*k_y3+k_y4)/6.0
-    z_ip1=z_i+self.step*(k_z1+2*k_z2+2*k_z3+k_z4)/6.0
-    t+=self.step
+    while(np.power(x+self.step,2)<self.T):
+      psi_i=psi_ip1
+      phi_i=phi_ip1
 
-    listx.append(t*t)
-    listchi.append(y_ip1)
+      k_psi1=x*phi_i
+      k_phi1=4*np.power(psi_i,1.5)
 
-    while(np.power(t+self.step,2)<self.rmax):
-      y_i=y_ip1
-      z_i=z_ip1
+      k_psi2=(x+self.step/2)*(phi_i+self.step*k_phi1/2.0)
+      k_phi2=4*np.power(psi_i+self.step*k_psi1/2.0,1.5)
 
-      k_y1=t*z_i
-      k_z1=4*np.power(y_i,1.5)
+      k_psi3=(x+self.step/2)*(phi_i+self.step*k_phi2/2.0)
+      k_phi3=4*np.power(psi_i+self.step*k_psi2/2.0,1.5)
 
-      k_y2=(t+self.step/2)*(z_i+self.step*k_z1/2.0)
-      k_z2=4*np.power(y_i+self.step*k_y1/2.0,1.5)
-
-      k_y3=(t+self.step/2)*(z_i+self.step*k_z2/2.0)
-      k_z3=4*np.power(y_i+self.step*k_y2/2.0,1.5)
-
-      k_y4=(t+self.step)*(z_i+self.step*k_z3)
-      k_z4=4*np.power(y_i+self.step*k_y3,1.5)
+      k_psi4=(x+self.step)*(phi_i+self.step*k_phi3)
+      k_phi4=4*np.power(psi_i+self.step*k_psi3,1.5)
   
-      y_ip1=y_i+self.step*(k_y1+2*k_y2+2*k_y3+k_y4)/6.0
-      z_ip1=z_i+self.step*(k_z1+2*k_z2+2*k_z3+k_z4)/6.0
-      t+=self.step
+      psi_ip1=psi_i+self.step*(k_psi1+2*k_psi2+2*k_psi3+k_psi4)/6.0
+      phi_ip1=phi_i+self.step*(k_phi1+2*k_phi2+2*k_phi3+k_phi4)/6.0
+      x+=self.step
+      listt.append(x*x)
+      listpsi.append(psi_ip1)
 
-      listx.append(t*t)
-      listchi.append(y_ip1)
+    t=np.array(listt)
+    psi=np.array(listpsi)
 
-    x=np.array(listx)
-    chi=np.array(listchi)
-
-    interp=interpolate.InterpolatedUnivariateSpline(x, chi, k=order)
+    interp=interpolate.InterpolatedUnivariateSpline(t, psi, k=order)
     return interp
    
 
@@ -337,41 +316,37 @@ if __name__=="__main__":
   print("UNIT TESTING")
   print()
 
-  maxrange=100
-  acc=1.0e-4
+  Tmax=100
+  acc=1.0e-5
 
-  print('Solve the Thomas-Fermi equation up to x={:.2f} (x=dimensionless variable)'.format(maxrange))
-  print('with a relative accuracy {:.2e}'.format(acc))
+  print('Solve the Thomas-Fermi equation up to x=',Tmax,'(x=rescaled variable)')
+  print('with a relative accuracy of', acc)
   print('')
 
-  # solve the Thomas-Fermi boundary value problem
-  test=ThomasFermi(rmax=maxrange)
+  test=ThomasFermi(T=Tmax)
   test.solve(acc)
-
-  print("Numrical solution details:")
-  print(" stepsize : {:.4e}".format(test.step))
-  print(" derivative in zero       : {:+.12f}".format(test.chi0prime))
-  print(" derivative in zero error : {:+.12f}".format(test.chi0prime_err))
-  print("")
-
-  # a spline interpolation is used to simplify the numerical integration
   interp=test.get_spline_interp()
 
-  Z=1
-  b=np.power(3./4.*np.pi, 2./3.)/2.  # approx 0.885
+  #for x in np.arange(0, Tmax+0.0001, 0.01):
+  #  print('{:5f} {:15.10f}'.format(x, float(interp(x))))
 
-  # from Landau 3 eq. 70.9
-  def density(r):                  
+  Z=1
+  b=np.power(3./4.*np.pi, 2./3.)/2.  ## approx 0.885
+  def density(r):                    ## from Landau 3 eq. 70.9
      return Z*Z*32./9./np.power(np.pi,3) * np.power(interp(r*np.power(Z,1./3.)/b)/(r*np.power(Z,1./3.)/b), 3./2.)
   def integrand(r):
-    return 4*np.pi*r*r*density(r)
+    # 4 pi r^2 density(r)
+    return Z*Z*4*np.pi*np.sqrt(r)* 32./9./np.power(np.pi,3) * np.power(interp(r*np.power(Z,1./3.)/b)/(np.power(Z,1./3.)/b), 3./2.)
 
-  # Rmax<maxrange just to avoid spurious boundary effects
-  Rmax=9*maxrange/10
-  print('Integral up to R={:.2f} (atomic units) of the electron density (Z={:d})'.format(Rmax, Z))
+  #for r in np.arange(0, b*Tmax+0.0001, 0.001):
+  #  aux=integrate.quad(integrand,0,r)
+  #  print('{:5f} {:15.10f} {:15.10f} {:15.10f}'.format(r, float(integrand(r)),float(aux[0]), float(aux[1])))
+
+  Rmax=80
+  print('Integral up to R=', Rmax,'(atomic units) of the electron density (Z=',Z,')')
   ris=integrate.quad(integrand, 0, Rmax)
-  print(" {:.8f}".format(ris[0]))
-  print('asymptotically should be {:d} but the solution has an heavy tail.'.format(Z))
+  print(ris[0])
+  print('should be ',Z,'but the solution has an heavy tail...')
   print('')
  
   def func_to_vanish(r):
@@ -380,21 +355,11 @@ if __name__=="__main__":
 
   print('Radius (in atomic units) contaning 50% of the charge')
   ris=optimize.newton(func_to_vanish, 1.4) 
-  print(" {:.8f}".format(ris))
-  print("")
-
-  print('According to Landau this should be approx 1.33/Z^(1./3.)={:.2f}'.format(1.33/np.power(Z,1./3.)))
-  print("but this is likely a typo, since Table 2 of par.70 of Landau 3")
-  print("is nicely reproduced. E.g.:")
-  print(" {:5.2f} {:.6f}".format(0.06, float(interp(0.06))))
-  print(" {:5.2f} {:.6f}".format(0.1, float(interp(0.1))))
-  print(" {:5.2f} {:.6f}".format(0.5, float(interp(0.5))))
-  print(" {:5.2f} {:.6f}".format(1,   float(interp(1))))
-  print(" {:5.2f} {:.6f}".format(4,   float(interp(4))))
-  print(" {:5.2f} {:.6f}".format(10,  float(interp(10))))
-  print(" {:5.2f} {:.6f}".format(20,  float(interp(20))))
-  print(" {:5.2f} {:.6f}".format(50,  float(interp(50))))
-
+  print(ris)
+  print('According to Landau this should be approx 1.33/Z^(1./3.)=',1.33/np.power(Z,1./3.))
+  print('According to Galindo and Pasqual it should be approx 1.682/Z^(1./3.)=', 1.682/np.power(Z,1./3.))
+  print('[Note that Table 2 of par.70 of Landau 3 is nicely reproduced by our data]')
+ 
 
 
 

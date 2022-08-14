@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import sch_solver_sparse as sparse
+import sch_solver_dense as dense 
 import sch_solver_shoot as shoot
 from scipy import optimize
 import sys
@@ -23,8 +23,11 @@ if __name__=="__main__":
 
  size=200
 
- solver=sparse.FDM_Sparse_5pD(anharmonic_pot, -IRcut, IRcut, 3)
- ris1, ris2, ris3=solver.solve(size) 
+ solver=dense.FDM_Dense_5pD(anharmonic_pot, -IRcut, IRcut)
+ ris=solver.solve(size) 
+ ris1=ris[0]
+ ris2=ris[1]
+ ris3=ris[2]
  
  solver1=shoot.Shoot_Numerov(anharmonic_pot, -IRcut, IRcut)
  ris1=solver1.solve_up_to_toll(ris1, 1.0e-4)
